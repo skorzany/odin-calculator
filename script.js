@@ -1,5 +1,5 @@
 function Calculator(controls, output) {
-    this.MAXLENGTH = 11;
+    this.MAXLENGTH = 10;
     this.controls = controls;
     this.output = output;
     this.memory = [];
