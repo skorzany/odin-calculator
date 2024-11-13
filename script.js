@@ -23,6 +23,11 @@ function Calculator(controls, display) {
         if (!this.memory.includes(".")) this.memory.push(".");
     };
 
+    this.convertToNum = function (memory) {
+        const converted = Number(memory.join(""));
+        return isNaN(converted) ? 0 : converted;
+    };
+
     this.turnOn = function() {
         this.setDefaultState();
         this.updateDisplay();
