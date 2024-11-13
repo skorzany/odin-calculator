@@ -7,9 +7,12 @@ function Calculator(controls, display) {
         this.processor = [0, null, null];
     };
 
-    // this.updateDisplay = function() {
-    //     if (this.memory.length === 1)
-    // };
+    this.updateDisplay = function() {
+        let output = this.convertToNum(this.memory);
+        const lastChar = this.memory[this.memory.length - 1];
+        if (lastChar === ".") output += ".";
+        this.display.textContent = output;
+    };
 
     this.updateMemory = function(x) {
         this.memory.push(x);
@@ -23,7 +26,7 @@ function Calculator(controls, display) {
         if (!this.memory.includes(".")) this.memory.push(".");
     };
 
-    this.convertToNum = function (memory) {
+    this.convertToNum = function(memory) {
         const converted = Number(memory.join(""));
         return isNaN(converted) ? 0 : converted;
     };
@@ -40,6 +43,8 @@ function Calculator(controls, display) {
                     if (symbol === "±") this.signMemory();
                     else if (symbol === ",") this.floatMemory();
                 }
+                console.log(this.memory);
+                this.updateDisplay();
             }
         });
     };
