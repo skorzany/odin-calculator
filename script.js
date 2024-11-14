@@ -1,7 +1,7 @@
 function Calculator(controls, display) {
+    this.SCREENLENGTH = 14;    // max number of digits that fit on the screen
     this.controls = controls;
     this.display = display;
-    this.SCREENLENGTH = 14;    // max number of digits that fit on the screen 
 
     this.setDefaultState = function() {
         this.memory = {"signed": false, "contents": []};
@@ -27,16 +27,20 @@ function Calculator(controls, display) {
     };
 
     this.updateMemory = function(x) {
-        this.memory["contents"].push(x);
+        this.memory.contents.push(x);
     };
 
     this.signMemory = () => {
-        this.memory["signed"] = !this.memory["signed"];
+        this.memory.signed = !this.memory.signed;
     };
 
     this.floatMemory = () => {
-        if (!this.memory["contents"].includes(".")) this.memory.contents.push(".");
+        if (!this.memory.contents.includes(".")) this.memory.contents.push(".");
     };
+
+    this.undoMemory = () => {
+        this.memory.contents.pop();
+    }
 
     this.convertToNum = function(arr) {
         console.log(this.memory.contents);
@@ -63,8 +67,14 @@ function Calculator(controls, display) {
                     if (symbol === "±") this.signMemory();
                     else if (symbol === ",") this.floatMemory();
                 }
-                this.viewMemory();
             }
+            else if (target.matches(".cancel")) {
+                this.setDefaultState();
+            }
+            else if (target.matches(".operator")) {
+                if (symbol === "←") this.undoMemory();
+            }
+            this.viewMemory();
         });
     };
 };
