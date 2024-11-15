@@ -25,8 +25,8 @@ function Calculator(controls, display) {
             }
         })();
         // console.log(`I did ${x} ${op} ${y}`);
-        result = result ?? x;
-        console.log(result);
+        result = result ?? y;
+        // console.log(result);
         this.processor[0] = result;
         this.processor[2] = null;
     };
@@ -48,16 +48,30 @@ function Calculator(controls, display) {
         this.memory.contents.push(x);
     };
 
-    this.signMemory = () => {
-        this.memory.signed = !this.memory.signed;
-    };
+    // this.signMemory = () => {
+    //     this.memory.signed = !this.memory.signed;
+    // };
 
     this.floatMemory = () => {
         if (!this.memory.contents.includes(".")) this.memory.contents.push(".");
     };
 
-    this.undoMemory = () => {
-        this.memory.contents.pop();
+    // this.undoMemory = () => {
+    //     this.memory.contents.pop();
+    // };
+
+    this.solveEquation = (operator) => {
+        if (this.processor[0] === null) {
+            this.processor[0] = this.convertToNum(this.memory);
+            this.processor[1] = operator;
+        }
+        else {
+            if (this.memory.contents.length) {
+                this.processor[2] = this.convertToNum(this.memory);
+                this.doTheMath();
+            }
+            this.processor[1] = operator;
+        }
     };
 
     this.convertToNum = (obj) => {
@@ -82,8 +96,8 @@ function Calculator(controls, display) {
             if (target.matches(".number")) {
                 if (!isNaN(symbol)) this.updateMemory(Number(symbol));
                 else {
-                    if (symbol === "±") this.signMemory();
-                    else if (symbol === ",") this.floatMemory();
+                    if (symbol === ",") this.floatMemory();
+                    // else if (symbol === "±") this.signMemory();
                 }
                 this.viewMemory();
             }
@@ -91,24 +105,8 @@ function Calculator(controls, display) {
                 this.setDefaultState();
             }
             else if (target.matches(".operator")) {
-                // if (symbol === "←") this.undoMemory();
-                if (this.processor[0] === null) {
-                    this.processor[0] = this.convertToNum(this.memory);
-                    this.processor[1] = symbol;
-                }
-                else {
-                    if (this.memory.contents.length) {
-                        this.processor[2] = this.convertToNum(this.memory);
-                        this.doTheMath();
-                    }
-                    this.processor[1] = symbol;
-                }
-                console.log(this.processor);
-                this.resetMemory();
-                this.showResult();
-            }
-            else if (target.matches("#process")) {
-                this.doTheMath();
+                this.solveEquation(symbol);
+                // console.log(this.processor);
                 this.resetMemory();
                 this.showResult();
             }
