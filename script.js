@@ -3,20 +3,35 @@ function Calculator(controls, display) {
     this.controls = controls;
     this.display = display;
 
-    this.setDefaultState = function() {
-        this.memory = {"signed": false, "contents": []};
-        this.processor = [0, null, null];
+    this.setDefaultState = () => {
+        this.processor = [null, null, null];    // [x, operator, y]
+        this.resetMemory();
+        this.showResult();
     };
 
-    this.updateDisplay = function() {
-        let output = this.convertToNum(this.memory.contents);
-        const lastChar = this.memory.contents[this.memory.contents.length - 1];
-        if (lastChar === ",") output += ".";
-        this.display.textContent = output;
+    this.showResult = () => {
+        const result = this.processor[0] ?? 0;
+        this.display.textContent = result;
     };
-    // todo: add a new function for converting memory to proper number
-    // add displayResult() which will be called after an operator was pressed and change display to proper result stored in processor[0]
-    this.viewMemory = function() {
+
+    this.doTheMath = () => {
+        let [x, op, y] = [...this.processor];
+        let result = (function () {
+            switch (op) {
+                case "+": return x + y;
+                case "−": return x - y;
+                case "×": return x*y;
+                case "÷": return x/y;
+            }
+        })();
+        // console.log(`I did ${x} ${op} ${y}`);
+        result = result ?? x;
+        console.log(result);
+        this.processor[0] = result;
+        this.processor[2] = null;
+    };
+
+    this.viewMemory = () => {
         let s = this.memory.contents.join("");
         s = s.replace(/^0+/, "");   // remove leading zeros
         s = (s === "") ? "0" : s;
@@ -26,7 +41,10 @@ function Calculator(controls, display) {
         this.display.textContent = s;
     };
 
-    this.updateMemory = function(x) {
+    this.resetMemory = () => {
+        this.memory = {"signed": false, "contents": []};
+    }
+    this.updateMemory = (x) => {
         this.memory.contents.push(x);
     };
 
@@ -40,24 +58,24 @@ function Calculator(controls, display) {
 
     this.undoMemory = () => {
         this.memory.contents.pop();
-    }
+    };
 
-    this.convertToNum = function(arr) {
-        console.log(this.memory.contents);
+    this.convertToNum = (obj) => {
+        const sign = obj.signed ? -1 : 1;
+        const arr = obj.contents;
         const decimalIdx = arr.indexOf(".");
         let whole = (decimalIdx === -1) ? arr.slice() : arr.slice(0, decimalIdx);
         let fraction = (decimalIdx === -1) ? [] : arr.slice(decimalIdx + 1);
 
         whole = whole.map((val, idx) => val*10**(whole.length - 1 - idx));
         fraction = fraction.map((val, idx) => val*10**(-idx - 1));
-        console.log(whole, fraction);
-        return whole.reduce((current, accumulator) => accumulator += current, 0)
-            + fraction.reduce((current, accumulator) => accumulator += current, 0);
+
+        return sign*(whole.reduce((current, accumulator) => accumulator += current, 0)
+            + fraction.reduce((current, accumulator) => accumulator += current, 0));
     };
 
-    this.turnOn = function() {
+    this.turnOn = () => {
         this.setDefaultState();
-        this.viewMemory();
         this.controls.addEventListener("click", e => {
             const target = e.target;
             const symbol = target.textContent;
@@ -67,14 +85,33 @@ function Calculator(controls, display) {
                     if (symbol === "±") this.signMemory();
                     else if (symbol === ",") this.floatMemory();
                 }
+                this.viewMemory();
             }
             else if (target.matches(".cancel")) {
                 this.setDefaultState();
             }
             else if (target.matches(".operator")) {
-                if (symbol === "←") this.undoMemory();
+                // if (symbol === "←") this.undoMemory();
+                if (this.processor[0] === null) {
+                    this.processor[0] = this.convertToNum(this.memory);
+                    this.processor[1] = symbol;
+                }
+                else {
+                    if (this.memory.contents.length) {
+                        this.processor[2] = this.convertToNum(this.memory);
+                        this.doTheMath();
+                    }
+                    this.processor[1] = symbol;
+                }
+                console.log(this.processor);
+                this.resetMemory();
+                this.showResult();
             }
-            this.viewMemory();
+            else if (target.matches("#process")) {
+                this.doTheMath();
+                this.resetMemory();
+                this.showResult();
+            }
         });
     };
 };
