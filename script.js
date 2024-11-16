@@ -1,34 +1,50 @@
 function Calculator(controls, output) {
-    this.MAXLENGTH = 10;
     this.controls = controls;
     this.output = output;
-    this.memory = [];
 
-    this.updateDisplay = () => {
-        if (this.memory.length === 0) this.output.textContent = 0;
-        else if (this.MAXLENGTH < this.memory.length) this.output.textContent = `...${this.memory.slice(this.memory.length - this.MAXLENGTH).join("")}`;
-        else this.output.textContent = this.memory.join("");
+    this.setDefaultState = () => {
+        this.memory = ["",];    //empty string represents the sign
+        this.leftNum = 0;
+        this.operator = null;
+        this.rightNum = 0;
+        this.result = 0;
     };
 
-    this.updateMemory = (x) => {
-        this.memory.push(x);
-        this.updateDisplay();
+    this.updateDisplay = (memo = [0]) => {this.output.textContent = this.convertToNum(memo)};
+
+    this.convertToNum = (arr) => {
+        const answer = Number(arr.join(""));
+        return isNaN(answer) ? 0 : answer;
     };
 
-    this.turnOn = function () {
+    this.turnOn = () => {
+        this.setDefaultState();
         this.updateDisplay();
         this.controls.addEventListener("click", e => {
             const target = e.target;
-            if (target.classList.contains("circle")) this.updateMemory(target.textContent);
-        })
-    }
+            const content = target.textContent;
+            if (target.matches(".number")) {
+                if (content === "0") {
+                    if (this.memory.length !== 1) this.memory.push(content);
+                }
+                else if (content === ".") {
+                    if (!(this.memory.includes("."))) this.memory.push(content);
+                }
+                else if (content === "±") {
+                    this.memory[0] = this.memory[0] === "" ? "-" : "";
+                }
+                else this.memory.push(content);
+            }
+            this.updateDisplay(this.memory);
+        });
+    };
 };
 
 function main() {
     const controls = document.querySelector(".controls");
     const output = document.querySelector(".output");
-    const calculator = new Calculator(controls, output);
-    calculator.turnOn();
-}
+    const calc = new Calculator(controls, output);
+    calc.turnOn();
+};
 
 main();
