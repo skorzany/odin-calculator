@@ -10,7 +10,14 @@ function Calculator(controls, display) {
     };
 
     this.showResult = () => {
-        const result = this.processor[0] ?? 0;
+        let result = this.processor[0] ?? 0;
+        if (!Number.isInteger(result)) {
+            const L = String(result).length;
+            const dotPosition = String(result).indexOf(".");
+            if (this.SCREENLENGTH < L) {
+                result = result.toFixed(this.SCREENLENGTH - (dotPosition + 1));
+            }
+        }
         this.display.textContent = result;
     };
 
@@ -43,7 +50,8 @@ function Calculator(controls, display) {
 
     this.resetMemory = () => {
         this.memory = {"signed": false, "contents": []};
-    }
+    };
+
     this.updateMemory = (x) => {
         this.memory.contents.push(x);
     };
@@ -84,8 +92,10 @@ function Calculator(controls, display) {
         whole = whole.map((val, idx) => val*10**(whole.length - 1 - idx));
         fraction = fraction.map((val, idx) => val*10**(-idx - 1));
 
-        return sign*(whole.reduce((current, accumulator) => accumulator += current, 0)
-            + fraction.reduce((current, accumulator) => accumulator += current, 0));
+        return sign*(
+            whole.reduce((current, accumulator) => accumulator += current, 0)
+            + fraction.reduce((current, accumulator) => accumulator += current, 0)
+        );
     };
 
     this.turnOn = () => {
