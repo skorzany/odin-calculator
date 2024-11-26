@@ -14,6 +14,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Math&display=swap" rel="stylesheet">
     <!-- END OF FONTS -->
+    <!-- FOUC PREVENTION -->
+    <style>html{visibility: hidden; opacity: 0;}</style>
+    <!-- END OF FOUC PREVENTION -->
     <title>Calculator</title>
 </head>
 <body>
@@ -38,10 +41,12 @@
             <div class="circle operator">&plus;</div>
             <div class="circle number">&plusmn;</div>
             <div class="circle number">0</div>
-            <div class="circle number">.</div>
-            <div id="process" class="circle">&equals;</div>
+            <div class="circle number">,</div>
+            <div id="process" class="circle operator">&equals;</div>
         </div>
         <div class="maker">&copy; 2024 Skorzany</div>
     </div>
+    <!-- prevent the Flash Of Unstyled Content (FOUC) at page load -->
+    <style>html{visibility: visible; opacity: 1;}</style>
 </body>
 </html>

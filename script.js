@@ -1,50 +1,126 @@
-function Calculator(controls, output) {
+function Calculator(controls, display) {
+    this.SCREENLENGTH = 14;    // max number of digits that fit on the screen
     this.controls = controls;
-    this.output = output;
+    this.display = display;
 
     this.setDefaultState = () => {
-        this.memory = ["",];    //empty string represents the sign
-        this.leftNum = 0;
-        this.operator = null;
-        this.rightNum = 0;
-        this.result = 0;
+        this.processor = [null, null, null];    // [x, operator, y]
+        this.resetMemory();
+        this.showResult();
     };
 
-    this.updateDisplay = (memo = [0]) => {this.output.textContent = this.convertToNum(memo)};
+    this.showResult = () => {
+        const result = this.processor[0] ?? 0;
+        this.display.textContent = result;
+    };
 
-    this.convertToNum = (arr) => {
-        const answer = Number(arr.join(""));
-        return isNaN(answer) ? 0 : answer;
+    this.doTheMath = () => {
+        let [x, op, y] = [...this.processor];
+        let result = (function () {
+            switch (op) {
+                case "+": return x + y;
+                case "−": return x - y;
+                case "×": return x*y;
+                case "÷": return x/y;
+            }
+        })();
+        // console.log(`I did ${x} ${op} ${y}`);
+        result = result ?? y;
+        // console.log(result);
+        this.processor[0] = result;
+        this.processor[2] = null;
+    };
+
+    this.viewMemory = () => {
+        let s = this.memory.contents.join("");
+        s = s.replace(/^0+/, "");   // remove leading zeros
+        s = (s === "") ? "0" : s;
+        if (s[0] === ".") s = "0" + s;
+        if (this.SCREENLENGTH < s.length) s = "..." + s.substring(s.length - this.SCREENLENGTH);
+        if (this.memory.signed) s = "-" + s;
+        this.display.textContent = s;
+    };
+
+    this.resetMemory = () => {
+        this.memory = {"signed": false, "contents": []};
+    }
+    this.updateMemory = (x) => {
+        this.memory.contents.push(x);
+    };
+
+    // this.signMemory = () => {
+    //     this.memory.signed = !this.memory.signed;
+    // };
+
+    this.floatMemory = () => {
+        if (!this.memory.contents.includes(".")) this.memory.contents.push(".");
+    };
+
+    // this.undoMemory = () => {
+    //     this.memory.contents.pop();
+    // };
+
+    this.solveEquation = (operator) => {
+        if (this.processor[0] === null) {
+            this.processor[0] = this.convertToNum(this.memory);
+            this.processor[1] = operator;
+        }
+        else {
+            if (this.memory.contents.length) {
+                this.processor[2] = this.convertToNum(this.memory);
+                this.doTheMath();
+            }
+            this.processor[1] = operator;
+        }
+    };
+
+    this.convertToNum = (obj) => {
+        const sign = obj.signed ? -1 : 1;
+        const arr = obj.contents;
+        const decimalIdx = arr.indexOf(".");
+        let whole = (decimalIdx === -1) ? arr.slice() : arr.slice(0, decimalIdx);
+        let fraction = (decimalIdx === -1) ? [] : arr.slice(decimalIdx + 1);
+
+        whole = whole.map((val, idx) => val*10**(whole.length - 1 - idx));
+        fraction = fraction.map((val, idx) => val*10**(-idx - 1));
+
+        return sign*(whole.reduce((current, accumulator) => accumulator += current, 0)
+            + fraction.reduce((current, accumulator) => accumulator += current, 0));
     };
 
     this.turnOn = () => {
         this.setDefaultState();
-        this.updateDisplay();
         this.controls.addEventListener("click", e => {
             const target = e.target;
-            const content = target.textContent;
+            const symbol = target.textContent;
             if (target.matches(".number")) {
-                if (content === "0") {
-                    if (this.memory.length !== 1) this.memory.push(content);
+                if (!isNaN(symbol)) this.updateMemory(Number(symbol));
+                else {
+                    if (symbol === ",") this.floatMemory();
+                    // else if (symbol === "±") this.signMemory();
                 }
-                else if (content === ".") {
-                    if (!(this.memory.includes("."))) this.memory.push(content);
-                }
-                else if (content === "±") {
-                    this.memory[0] = this.memory[0] === "" ? "-" : "";
-                }
-                else this.memory.push(content);
+                this.viewMemory();
             }
-            this.updateDisplay(this.memory);
+            else if (target.matches(".cancel")) {
+                this.setDefaultState();
+            }
+            else if (target.matches(".operator")) {
+                this.solveEquation(symbol);
+                // console.log(this.processor);
+                this.resetMemory();
+                this.showResult();
+            }
         });
     };
 };
 
 function main() {
     const controls = document.querySelector(".controls");
-    const output = document.querySelector(".output");
-    const calc = new Calculator(controls, output);
+    const display = document.querySelector(".output");
+
+    const calc = new Calculator(controls, display);
     calc.turnOn();
 };
+
 
 main();
