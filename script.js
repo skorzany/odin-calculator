@@ -24,9 +24,7 @@ function Calculator(controls, display) {
                 case "÷": return x/y;
             }
         })();
-        // console.log(`I did ${x} ${op} ${y}`);
         result = result ?? y;
-        // console.log(result);
         this.processor[0] = result;
         this.processor[2] = null;
     };
@@ -37,7 +35,9 @@ function Calculator(controls, display) {
         s = (s === "") ? "0" : s;
         if (s[0] === ".") s = "0" + s;
         if (this.SCREENLENGTH < s.length) s = "..." + s.substring(s.length - this.SCREENLENGTH);
-        if (this.memory.signed) s = "-" + s;
+        if (this.memory.signed) {
+            if (this.convertToNum(this.memory) !== 0) s = "-" + s;
+        };
         this.display.textContent = s;
     };
 
@@ -48,9 +48,9 @@ function Calculator(controls, display) {
         this.memory.contents.push(x);
     };
 
-    // this.signMemory = () => {
-    //     this.memory.signed = !this.memory.signed;
-    // };
+    this.signMemory = () => {
+        this.memory.signed = !this.memory.signed;
+    };
 
     this.floatMemory = () => {
         if (!this.memory.contents.includes(".")) this.memory.contents.push(".");
@@ -97,7 +97,7 @@ function Calculator(controls, display) {
                 if (!isNaN(symbol)) this.updateMemory(Number(symbol));
                 else {
                     if (symbol === ",") this.floatMemory();
-                    // else if (symbol === "±") this.signMemory();
+                    else if (symbol === "±") this.signMemory();
                 }
                 this.viewMemory();
             }
@@ -106,7 +106,6 @@ function Calculator(controls, display) {
             }
             else if (target.matches(".operator")) {
                 this.solveEquation(symbol);
-                // console.log(this.processor);
                 this.resetMemory();
                 this.showResult();
             }
