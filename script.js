@@ -6,11 +6,22 @@ function Calculator(controls, display) {
     this.setDefaultState = () => {
         this.processor = [null, null, null];    // [x, operator, y]
         this.resetMemory();
+        this.clearHighlights();
         this.showResult();
+    };
+
+    this.clearHighlights = () => {
+        const clicked = document.querySelector(".clicked");
+        if (clicked) clicked.classList.remove("clicked");
     };
 
     this.showResult = () => {
         let result = this.processor[0] ?? 0;
+        if (result === "DivByZero") {
+            this.display.textContent = result;
+            this.processor[0] = null;
+            return;
+        }
         if (!Number.isInteger(result)) {
             const L = String(result).length;
             const dotPosition = String(result).indexOf(".");
@@ -18,7 +29,7 @@ function Calculator(controls, display) {
                 result = result.toFixed(this.SCREENLENGTH - (dotPosition + 1));
             }
         }
-        this.display.textContent = result;
+        this.display.textContent = parseFloat(result);
     };
 
     this.doTheMath = () => {
@@ -28,7 +39,7 @@ function Calculator(controls, display) {
                 case "+": return x + y;
                 case "−": return x - y;
                 case "×": return x*y;
-                case "÷": return x/y;
+                case "÷": return (y !== 0) ? x/y : "DivByZero";
             }
         })();
         result = result ?? y;
@@ -41,10 +52,10 @@ function Calculator(controls, display) {
         s = s.replace(/^0+/, "");   // remove leading zeros
         s = (s === "") ? "0" : s;
         if (s[0] === ".") s = "0" + s;
-        if (this.SCREENLENGTH < s.length) s = "..." + s.substring(s.length - this.SCREENLENGTH);
+        // if (this.SCREENLENGTH < s.length) s = "..." + s.substring(s.length - this.SCREENLENGTH);
         if (this.memory.signed) {
             if (this.convertToNum(this.memory) !== 0) s = "-" + s;
-        };
+        }
         this.display.textContent = s;
     };
 
@@ -56,9 +67,9 @@ function Calculator(controls, display) {
         this.memory.contents.push(x);
     };
 
-    this.signMemory = () => {
-        this.memory.signed = !this.memory.signed;
-    };
+    // this.signMemory = () => {
+    //     this.memory.signed = !this.memory.signed;
+    // };
 
     this.floatMemory = () => {
         if (!this.memory.contents.includes(".")) this.memory.contents.push(".");
@@ -98,6 +109,11 @@ function Calculator(controls, display) {
         );
     };
 
+    this.highlightOperator = (target) => {
+        this.clearHighlights();
+        if (target.textContent !== "=") target.classList.add("clicked");
+    };
+
     this.turnOn = () => {
         this.setDefaultState();
         this.controls.addEventListener("click", e => {
@@ -107,7 +123,7 @@ function Calculator(controls, display) {
                 if (!isNaN(symbol)) this.updateMemory(Number(symbol));
                 else {
                     if (symbol === ",") this.floatMemory();
-                    else if (symbol === "±") this.signMemory();
+                    // else if (symbol === "±") this.signMemory();
                 }
                 this.viewMemory();
             }
@@ -115,9 +131,10 @@ function Calculator(controls, display) {
                 this.setDefaultState();
             }
             else if (target.matches(".operator")) {
+                this.highlightOperator(target);
                 this.solveEquation(symbol);
-                this.resetMemory();
                 this.showResult();
+                this.resetMemory();
             }
         });
     };

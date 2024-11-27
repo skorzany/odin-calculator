@@ -44,7 +44,9 @@ body {
 .output {
     position: absolute;
     bottom: 0;
-    right: 10px;
+    text-align: end;
+    width: 490px;
+    overflow-x: scroll;
 }
 
 .controls {
@@ -78,6 +80,10 @@ body {
 
 .operator {
     color: greenyellow;
+}
+
+.clicked {
+    opacity: 0.5;
 }
 
 #process {
