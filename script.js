@@ -1,5 +1,5 @@
 function Calculator(controls, display) {
-    this.SCREENLENGTH = 17;    // max number of digits that fit on the screen
+    this.SCREENLENGTH = 17;    // long decimals will get rounded to fit this many characters
     this.controls = controls;
     this.display = display;
 
@@ -128,7 +128,7 @@ function Calculator(controls, display) {
             this.clearHighlights();
             target.classList.add("clicked");
         }
-        else if (target.textContent === "=") this.clearHighlights();
+        else this.clearHighlights();
     };
 
     this.turnOn = () => {
@@ -144,17 +144,21 @@ function Calculator(controls, display) {
                         else if (symbol === "±") this.changeSign();
                     }
                 }
-                else if (target.matches(".cancel")) {
-                    this.setDefaultState();
-                }
                 else if (target.matches(".operator")) {
                     this.highlightOperator(target);
                     this.solveEquation(symbol);
                     this.showResult();
                     this.resetMemory();
                 }
+                else if (target.matches(".special")) {
+                    if (symbol === "%") console.log('percent');
+                    else console.log('arrow');
+                }
+                else if (target.matches(".cancel")) {
+                    this.setDefaultState();
+                }
             }
-            else if (target.matches(".cancel")) this.setDefaultState(); // DivByZero has happened, unlocks only C button
+            else if (target.matches(".cancel")) this.setDefaultState(); // DivByZero case, lock everything but C button
         });
     };
 };

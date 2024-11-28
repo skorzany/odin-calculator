@@ -78,7 +78,7 @@ body {
     color: white;
 }
 
-.operator {
+.operator, .special {
     color: greenyellow;
 }
 
