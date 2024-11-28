@@ -1,13 +1,18 @@
 function Calculator(controls, display) {
-    this.SCREENLENGTH = 14;    // max number of digits that fit on the screen
+    this.SCREENLENGTH = 17;    // max number of digits that fit on the screen
     this.controls = controls;
     this.display = display;
 
     this.setDefaultState = () => {
         this.processor = [null, null, null];    // [x, operator, y]
-        this.resetMemory();
+        this.memory = {"signed": false, "contents": []};
         this.clearHighlights();
         this.showResult();
+    };
+
+    this.resetMemory = () => {
+        this.memory.signed = false;
+        this.memory.contents = [];
     };
 
     this.clearHighlights = () => {
@@ -45,6 +50,7 @@ function Calculator(controls, display) {
         result = result ?? y;
         this.processor[0] = result;
         this.processor[2] = null;
+        if (result === "DivByZero") this.clearHighlights();
     };
 
     this.viewMemory = () => {
@@ -52,27 +58,35 @@ function Calculator(controls, display) {
         s = s.replace(/^0+/, "");   // remove leading zeros
         s = (s === "") ? "0" : s;
         if (s[0] === ".") s = "0" + s;
-        // if (this.SCREENLENGTH < s.length) s = "..." + s.substring(s.length - this.SCREENLENGTH);
         if (this.memory.signed) {
             if (this.convertToNum(this.memory) !== 0) s = "-" + s;
         }
         this.display.textContent = s;
     };
 
-    this.resetMemory = () => {
-        this.memory = {"signed": false, "contents": []};
-    };
-
     this.updateMemory = (x) => {
         this.memory.contents.push(x);
+        this.viewMemory();
     };
 
-    // this.signMemory = () => {
-    //     this.memory.signed = !this.memory.signed;
-    // };
+    this.changeSign = () => {
+        if (this.memory.contents.length) this.signMemory();
+        else this.signResult();
+    };
+
+    this.signMemory = () => {
+        this.memory.signed = !this.memory.signed;
+        this.viewMemory();
+    };
+
+    this.signResult = () => {
+        this.processor[0] *= -1;
+        this.showResult();
+    };
 
     this.floatMemory = () => {
         if (!this.memory.contents.includes(".")) this.memory.contents.push(".");
+        this.viewMemory();
     };
 
     // this.undoMemory = () => {
@@ -110,8 +124,11 @@ function Calculator(controls, display) {
     };
 
     this.highlightOperator = (target) => {
-        this.clearHighlights();
-        if (target.textContent !== "=") target.classList.add("clicked");
+        if (target.classList.contains("sticky")) {
+            this.clearHighlights();
+            target.classList.add("clicked");
+        }
+        else if (target.textContent === "=") this.clearHighlights();
     };
 
     this.turnOn = () => {
@@ -119,23 +136,25 @@ function Calculator(controls, display) {
         this.controls.addEventListener("click", e => {
             const target = e.target;
             const symbol = target.textContent;
-            if (target.matches(".number")) {
-                if (!isNaN(symbol)) this.updateMemory(Number(symbol));
-                else {
-                    if (symbol === ",") this.floatMemory();
-                    // else if (symbol === "±") this.signMemory();
+            if (this.display.textContent !== "DivByZero") {
+                if (target.matches(".number")) {
+                    if (!isNaN(symbol)) this.updateMemory(Number(symbol));
+                    else {
+                        if (symbol === ",") this.floatMemory();
+                        else if (symbol === "±") this.changeSign();
+                    }
                 }
-                this.viewMemory();
+                else if (target.matches(".cancel")) {
+                    this.setDefaultState();
+                }
+                else if (target.matches(".operator")) {
+                    this.highlightOperator(target);
+                    this.solveEquation(symbol);
+                    this.showResult();
+                    this.resetMemory();
+                }
             }
-            else if (target.matches(".cancel")) {
-                this.setDefaultState();
-            }
-            else if (target.matches(".operator")) {
-                this.highlightOperator(target);
-                this.solveEquation(symbol);
-                this.showResult();
-                this.resetMemory();
-            }
+            else if (target.matches(".cancel")) this.setDefaultState(); // DivByZero has happened, unlocks only C button
         });
     };
 };
