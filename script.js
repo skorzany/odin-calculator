@@ -42,14 +42,14 @@ function Calculator(controls, display) {
     this.enableHovers = () => {
         const buttons = [...document.querySelectorAll(".circle")];
         buttons.map((ele) => {
-            if (!ele.classList.contains("clear")) ele.classList.toggle("hoverable");
+            if (!ele.classList.contains("clear")) ele.classList.add("hoverable");
         });
     };
 
     this.disableHovers = () => {
         const buttons = [...document.querySelectorAll(".hoverable")];
         buttons.map((ele) => {
-            if (!ele.classList.contains("clear")) ele.classList.toggle("hoverable");
+            if (!ele.classList.contains("clear")) ele.classList.remove("hoverable");
         });
     };
 
@@ -80,7 +80,7 @@ function Calculator(controls, display) {
         if (this.memory.signed) {
             if (this.convertToNum(this.memory) !== 0) s = "-" + s;
         }
-        this.display.textContent = s;
+        this.display.textContent = parseFloat(s);
     };
 
     this.updateMemory = (x) => {
@@ -107,6 +107,37 @@ function Calculator(controls, display) {
         if (!this.memory.contents.includes(".")) this.memory.contents.push(".");
         this.viewMemory();
     };
+
+    this.percents = () => {
+        if (this.memory.contents.length) {
+            this.pctMemory();
+            this.viewMemory();
+        }
+        else {
+            this.pctResult();
+            this.showResult();
+        }
+    };
+
+    this.pctMemory = () => {
+        const oldDotPosition = this.memory.contents.indexOf(".");
+        if (oldDotPosition !== -1) {
+            const newDotPosition = oldDotPosition - 2;
+            this.memory.contents.splice(oldDotPosition, 1);
+            if (0 <= newDotPosition) this.memory.contents.splice(newDotPosition, 0, '.');
+            else {
+                const shift = (newDotPosition === -1) ? [".", 0] : [".", 0, 0];
+                this.memory.contents = [...shift, ...this.memory.contents];
+            }
+        }
+        else {
+            const dotPos = this.memory.contents.length - 2;
+            if (0 <= dotPos) this.memory.contents.splice(dotPos, 0, ".");
+            else this.memory.contents.splice(0, 0, ".", 0);
+        }
+    };
+
+    this.pctResult = () => {this.processor[0] /= 100;}
 
     // this.undoMemory = () => {
     //     this.memory.contents.pop();
@@ -170,7 +201,7 @@ function Calculator(controls, display) {
                     this.resetMemory();
                 }
                 else if (target.matches(".special")) {
-                    if (symbol === "%") console.log('percent');
+                    if (symbol === "%") this.percents();
                     else console.log('arrow');
                 }
                 else if (target.matches(".clear")) {
