@@ -7,6 +7,7 @@ function Calculator(controls, display) {
         this.processor = [null, null, null];    // [x, operator, y]
         this.memory = {"signed": false, "contents": []};
         this.error = false;
+        this.enableHovers();
         this.clearHighlights();
         this.showResult();
     };
@@ -25,6 +26,7 @@ function Calculator(controls, display) {
         let result = this.processor[0] ?? 0;
         if (this.error) {
             this.display.textContent = result;
+            this.disableHovers();
             return;
         }
         if (!Number.isInteger(result)) {
@@ -35,6 +37,20 @@ function Calculator(controls, display) {
             }
         }
         this.display.textContent = parseFloat(result);
+    };
+
+    this.enableHovers = () => {
+        const buttons = [...document.querySelectorAll(".circle")];
+        buttons.map((ele) => {
+            if (!ele.classList.contains("clear")) ele.classList.toggle("hoverable");
+        });
+    };
+
+    this.disableHovers = () => {
+        const buttons = [...document.querySelectorAll(".hoverable")];
+        buttons.map((ele) => {
+            if (!ele.classList.contains("clear")) ele.classList.toggle("hoverable");
+        });
     };
 
     this.doTheMath = () => {
