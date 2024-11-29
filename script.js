@@ -6,6 +6,7 @@ function Calculator(controls, display) {
     this.setDefaultState = () => {
         this.processor = [null, null, null];    // [x, operator, y]
         this.memory = {"signed": false, "contents": []};
+        this.error = false;
         this.clearHighlights();
         this.showResult();
     };
@@ -22,9 +23,8 @@ function Calculator(controls, display) {
 
     this.showResult = () => {
         let result = this.processor[0] ?? 0;
-        if (result === "DivByZero") {
+        if (this.error) {
             this.display.textContent = result;
-            this.processor[0] = null;
             return;
         }
         if (!Number.isInteger(result)) {
@@ -50,7 +50,10 @@ function Calculator(controls, display) {
         result = result ?? y;
         this.processor[0] = result;
         this.processor[2] = null;
-        if (result === "DivByZero") this.clearHighlights();
+        if (result === "DivByZero") {
+            this.clearHighlights();
+            this.error = true;
+        };
     };
 
     this.viewMemory = () => {
@@ -136,7 +139,7 @@ function Calculator(controls, display) {
         this.controls.addEventListener("click", e => {
             const target = e.target;
             const symbol = target.textContent;
-            if (this.display.textContent !== "DivByZero") {
+            if (!this.error) {
                 if (target.matches(".number")) {
                     if (!isNaN(symbol)) this.updateMemory(Number(symbol));
                     else {
@@ -154,11 +157,11 @@ function Calculator(controls, display) {
                     if (symbol === "%") console.log('percent');
                     else console.log('arrow');
                 }
-                else if (target.matches(".cancel")) {
+                else if (target.matches(".clear")) {
                     this.setDefaultState();
                 }
             }
-            else if (target.matches(".cancel")) this.setDefaultState(); // DivByZero case, lock everything but C button
+            else if (target.matches(".clear")) this.setDefaultState(); // DivByZero case, lock everything but C button
         });
     };
 };
