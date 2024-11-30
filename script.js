@@ -169,7 +169,7 @@ function Calculator(controls, display) {
         let resultAsString = String(this.processor[0]);
         if (resultAsString.indexOf("e") === -1) resultAsString = resultAsString.slice(0, -1);
         else {
-            //special case when very big result is shown in exponential form
+            // when string is a number in exponential form, we need math, not slicing!
             resultAsString = Number(resultAsString).toFixed(100);
             resultAsString = String(Math.trunc(resultAsString/10));
         }
