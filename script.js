@@ -1,5 +1,5 @@
 function Calculator(controls, display) {
-    this.SCREENLENGTH = 17;    // long decimals will get rounded to fit this many characters
+    this.SCREENLENGTH = 17;     // long decimals will get rounded to fit this many characters
     this.controls = controls;
     this.display = display;
 
@@ -111,7 +111,7 @@ function Calculator(controls, display) {
     this.percents = () => {
         if (this.memory.contents.length) {
             this.pctMemory();
-            this.removeTrailingZeros(this.memory.contents);     // required for proper display
+            this.removeTrailingZeros(this.memory.contents);     // some special cases require this for proper display 
             this.viewMemory();
         }
         else {
@@ -149,9 +149,32 @@ function Calculator(controls, display) {
         if (lastItem === ".") arr.pop();
     };
 
-    // this.undoMemory = () => {
-    //     this.memory.contents.pop();
-    // };
+    this.eraseLastChar = () => {
+        if (this.memory.contents.length) {
+            this.undoMemory();
+            this.viewMemory();
+        }
+        else {
+            this.undoResult();
+            this.showResult();
+        }
+    };
+
+    this.undoMemory = () => {
+        this.memory.contents.pop();
+        if (this.memory.contents.length === 0) this.memory.signed = false;
+    };
+
+    this.undoResult = () => {
+        let resultAsString = String(this.processor[0]);
+        if (resultAsString.indexOf("e") === -1) resultAsString = resultAsString.slice(0, -1);
+        else {
+            //special case when very big result is shown in exponential form
+            resultAsString = Number(resultAsString).toFixed(100);
+            resultAsString = String(Math.trunc(resultAsString/10));
+        }
+        this.processor[0] = Number(resultAsString);
+    };
 
     this.solveEquation = (operator) => {
         if (this.processor[0] === null) {
@@ -212,7 +235,7 @@ function Calculator(controls, display) {
                 }
                 else if (target.matches(".special")) {
                     if (symbol === "%") this.percents();
-                    else console.log('arrow');
+                    else this.eraseLastChar();
                 }
                 else if (target.matches(".clear")) {
                     this.setDefaultState();
