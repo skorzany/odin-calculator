@@ -80,7 +80,7 @@ function Calculator(controls, display) {
         if (this.memory.signed) {
             if (this.convertToNum(this.memory) !== 0) s = "-" + s;
         }
-        this.display.textContent = parseFloat(s);
+        this.display.textContent = s;
     };
 
     this.updateMemory = (x) => {
@@ -111,6 +111,7 @@ function Calculator(controls, display) {
     this.percents = () => {
         if (this.memory.contents.length) {
             this.pctMemory();
+            this.removeTrailingZeros(this.memory.contents);     // required for proper display
             this.viewMemory();
         }
         else {
@@ -138,6 +139,15 @@ function Calculator(controls, display) {
     };
 
     this.pctResult = () => {this.processor[0] /= 100;}
+
+    this.removeTrailingZeros = (arr) => {
+        let lastItem = arr[arr.length - 1];
+        while (lastItem === 0) {
+            arr.pop();
+            lastItem = arr[arr.length - 1];
+        }
+        if (lastItem === ".") arr.pop();
+    };
 
     // this.undoMemory = () => {
     //     this.memory.contents.pop();
