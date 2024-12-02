@@ -80,7 +80,7 @@ function Calculator(controls, display) {
         if (this.memory.signed) {
             if (this.convertToNum(this.memory) !== 0) s = "-" + s;
         }
-        this.display.textContent = s;   // it has to be a string, not parsed float, to prevent decimal point from disappearing during input
+        this.display.textContent = s;   // to prevent decimal point from disappearing during input, we need a string, not parsed float
     };
 
     this.updateMemory = (x) => {
@@ -235,7 +235,7 @@ function Calculator(controls, display) {
                 }
                 else if (target.matches(".special")) {
                     if (symbol === "%") this.percents();
-                    else this.eraseLastChar();
+                    else if (symbol === "←") this.eraseLastChar();
                 }
                 else if (target.matches(".clear")) {
                     this.setDefaultState();
