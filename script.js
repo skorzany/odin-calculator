@@ -80,7 +80,7 @@ function Calculator(controls, display) {
         if (this.memory.signed) {
             if (this.convertToNum(this.memory) !== 0) s = "-" + s;
         }
-        this.display.textContent = s;
+        this.display.textContent = s;   // it has to be a string, not parsed float, to prevent decimal point from disappearing during input
     };
 
     this.updateMemory = (x) => {
@@ -111,7 +111,6 @@ function Calculator(controls, display) {
     this.percents = () => {
         if (this.memory.contents.length) {
             this.pctMemory();
-            this.removeTrailingZeros(this.memory.contents);     // some special cases require this for proper display 
             this.viewMemory();
         }
         else {
@@ -136,9 +135,8 @@ function Calculator(controls, display) {
             if (0 <= dotPos) this.memory.contents.splice(dotPos, 0, ".");
             else this.memory.contents.splice(0, 0, ".", 0);
         }
+        this.removeTrailingZeros(this.memory.contents);     // we're not doing math but simply manipulating dot position, so in cases where user input was an integer ending with more than two 0's, additional cleanup is required for proper display
     };
-
-    this.pctResult = () => {this.processor[0] /= 100;}
 
     this.removeTrailingZeros = (arr) => {
         let lastItem = arr[arr.length - 1];
@@ -148,6 +146,8 @@ function Calculator(controls, display) {
         }
         if (lastItem === ".") arr.pop();
     };
+
+    this.pctResult = () => {this.processor[0] /= 100;}
 
     this.eraseLastChar = () => {
         if (this.memory.contents.length) {
