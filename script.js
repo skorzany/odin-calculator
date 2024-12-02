@@ -1,5 +1,6 @@
 function Calculator(controls, display) {
     this.SCREENLENGTH = 17;     // long decimals will get rounded to fit this many characters
+    this.SCROLLSIZE = 999999999;     // should be a very big number, to allow auto-scrolling the whole result
     this.controls = controls;
     this.display = display;
 
@@ -37,6 +38,7 @@ function Calculator(controls, display) {
             }
         }
         this.display.textContent = parseFloat(result);
+        this.display.scrollLeft = -this.SCROLLSIZE;     // scroll the view to the most significant part of the result
     };
 
     this.enableHovers = () => {
@@ -81,6 +83,7 @@ function Calculator(controls, display) {
             if (this.convertToNum(this.memory) !== 0) s = "-" + s;
         }
         this.display.textContent = s;   // to prevent decimal point from disappearing during input, we need a string, not parsed float
+        this.display.scrollLeft = this.SCROLLSIZE;      // keep the latest entry in focus
     };
 
     this.updateMemory = (x) => {
@@ -216,6 +219,7 @@ function Calculator(controls, display) {
 
     this.turnOn = () => {
         this.setDefaultState();
+        // mouse events
         this.controls.addEventListener("click", e => {
             const target = e.target;
             const symbol = target.textContent;
@@ -242,6 +246,14 @@ function Calculator(controls, display) {
                 }
             }
             else if (target.matches(".clear")) this.setDefaultState(); // DivByZero case, lock everything but C button
+        });
+        // keyboard support
+        let keyPressed = {};
+        document.addEventListener("keydown", (e) => {
+            const keyName = e.key;
+            if (!this.error) {
+                if (!isNaN(keyName)) this.updateMemory(Number(keyName));
+            }
         });
     };
 };
