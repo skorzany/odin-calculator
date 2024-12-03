@@ -1,6 +1,8 @@
 function Calculator(controls, display) {
     this.SCREENLENGTH = 17;     // long decimals will get rounded to fit this many characters
     this.SCROLLSIZE = 999999999;     // should be a very big number, to allow auto-scrolling the whole result
+    this.OPERATORMAP = {"/": "divide", "÷": "divide", "*": "times", "×": "times", "-": "minus", "−": "minus", "+": "plus", "Enter": "equals", "=": "equals",};
+    this.KEYSTOSYMBOLS = {"/": "÷", "*": "×", "-": "−", "+": "+",};
     this.controls = controls;
     this.display = display;
 
@@ -153,13 +155,14 @@ function Calculator(controls, display) {
     this.pctResult = () => {this.processor[0] /= 100;}
 
     this.eraseLastChar = () => {
-        if (this.memory.contents.length) {
-            this.undoMemory();
-            this.viewMemory();
-        }
-        else {
+        const resultInFocus = (Math.abs(this.display.textContent - this.processor[0]) < 0.0000000001);  // comparing two floats is kinda impossible so instead we look if their difference is very small
+        if (resultInFocus) {
             this.undoResult();
             this.showResult();
+        }
+        else {
+            this.undoMemory();
+            this.viewMemory();
         }
     };
 
@@ -169,12 +172,23 @@ function Calculator(controls, display) {
     };
 
     this.undoResult = () => {
-        let resultAsString = String(this.processor[0]);
-        if (resultAsString.indexOf("e") === -1) resultAsString = resultAsString.slice(0, -1);
+        // console.log("undo start,", this.processor[0], this.processor[0].toFixed(100));
+
+        const result = this.processor[0] ?? 0;
+        let resultAsString = String(result);
+        if (resultAsString.indexOf("e") === -1) {
+            resultAsString = resultAsString.slice(0, -1);
+            if (resultAsString === "-") resultAsString = "0";
+        }
         else {
-            // when string is a number in exponential form, we need math, not slicing!
+            // when resultAsString is a number in exponential form
             resultAsString = Number(resultAsString).toFixed(100);
-            resultAsString = String(Math.trunc(resultAsString/10));
+            // console.log('here')
+            if (1 <= Math.abs(resultAsString)) {
+                // console.log('here');
+                resultAsString = String(Math.trunc(resultAsString/10));
+            }
+            else resultAsString = String(resultAsString).slice(0, -1);
         }
         this.processor[0] = Number(resultAsString);
     };
@@ -210,6 +224,7 @@ function Calculator(controls, display) {
     };
 
     this.highlightOperator = (target) => {
+        if (target in this.OPERATORMAP) target = document.querySelector("." + this.OPERATORMAP[target]);
         if (target.classList.contains("sticky")) {
             this.clearHighlights();
             target.classList.add("clicked");
@@ -219,6 +234,7 @@ function Calculator(controls, display) {
 
     this.turnOn = () => {
         this.setDefaultState();
+        this.keysPressed = {};
         // mouse events
         this.controls.addEventListener("click", e => {
             const target = e.target;
@@ -248,15 +264,30 @@ function Calculator(controls, display) {
             else if (target.matches(".clear")) this.setDefaultState(); // DivByZero case, lock everything but C button
         });
         // keyboard support
-        let keyPressed = {};
-        document.addEventListener("keydown", (e) => {
+        document.addEventListener("keydown", e => {
             const keyName = e.key;
+            if (keyName === "/") e.preventDefault();    // Firefox uses this key for 'Quick find'
+            if (keyName === "Escape") this.setDefaultState();   // error or not, Escape should always be able to clear
             if (!this.error) {
                 if (!isNaN(keyName)) this.updateMemory(Number(keyName));
+                else if (keyName === "Backspace") {console.log('backspace');this.eraseLastChar();}
+                else if (keyName === "%") this.percents();
+                else if (keyName === "`") this.changeSign();
+                else if (".,".includes(keyName)) this.floatMemory();
+                else if ("/*-+=Enter".includes(keyName)) {
+                    this.highlightOperator(keyName);
+                    this.solveEquation(this.KEYSTOSYMBOLS[keyName]);
+                    this.showResult();
+                    this.resetMemory();
+                }
             }
         });
     };
 };
+
+// TODO: EVERYTHING MOSTLY WORKS, BUT USING BACKSPACE IS SOMETIMES PROBLEMATIC AS WE ARE LOSING PRECISION
+// CHANGE THE LOGIC TO STORE IN this.processor[0] AND this.processor[2] OBJECTS OF MEMORY AND THEN CONVERT THOSE TO NUMBERS BEFORE DISPLAYING
+// THIS WILL ALLOW FOR EASY 'UNDO' AS WE WILL ONLY POP MEMORY CONTENTS, THUS KEEPING THE PRECISION (MOSTLY) INTACT
 
 function main() {
     const controls = document.querySelector(".controls");
