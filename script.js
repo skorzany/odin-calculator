@@ -172,8 +172,6 @@ function Calculator(controls, display) {
     };
 
     this.undoResult = () => {
-        // console.log("undo start,", this.processor[0], this.processor[0].toFixed(100));
-
         const result = this.processor[0] ?? 0;
         let resultAsString = String(result);
         if (resultAsString.indexOf("e") === -1) {
@@ -183,9 +181,7 @@ function Calculator(controls, display) {
         else {
             // when resultAsString is a number in exponential form
             resultAsString = Number(resultAsString).toFixed(100);
-            // console.log('here')
             if (1 <= Math.abs(resultAsString)) {
-                // console.log('here');
                 resultAsString = String(Math.trunc(resultAsString/10));
             }
             else resultAsString = String(resultAsString).slice(0, -1);
@@ -270,7 +266,7 @@ function Calculator(controls, display) {
             if (keyName === "Escape") this.setDefaultState();   // error or not, Escape should always be able to clear
             if (!this.error) {
                 if (!isNaN(keyName)) this.updateMemory(Number(keyName));
-                else if (keyName === "Backspace") {console.log('backspace');this.eraseLastChar();}
+                else if (keyName === "Backspace") this.eraseLastChar();
                 else if (keyName === "%") this.percents();
                 else if (keyName === "`") this.changeSign();
                 else if (".,".includes(keyName)) this.floatMemory();
@@ -284,10 +280,6 @@ function Calculator(controls, display) {
         });
     };
 };
-
-// TODO: EVERYTHING MOSTLY WORKS, BUT USING BACKSPACE IS SOMETIMES PROBLEMATIC AS WE ARE LOSING PRECISION
-// CHANGE THE LOGIC TO STORE IN this.processor[0] AND this.processor[2] OBJECTS OF MEMORY AND THEN CONVERT THOSE TO NUMBERS BEFORE DISPLAYING
-// THIS WILL ALLOW FOR EASY 'UNDO' AS WE WILL ONLY POP MEMORY CONTENTS, THUS KEEPING THE PRECISION (MOSTLY) INTACT
 
 function main() {
     const controls = document.querySelector(".controls");
