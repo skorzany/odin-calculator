@@ -230,7 +230,6 @@ function Calculator(controls, display) {
 
     this.turnOn = () => {
         this.setDefaultState();
-        this.keysPressed = {};
         // mouse events
         this.controls.addEventListener("click", e => {
             const target = e.target;
