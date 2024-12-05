@@ -24,7 +24,7 @@ Made as a part of the Odin Project curriculum.
 
 ## Usage
 
-Mouse: just click on the buttons;
+Mouse: just click on the buttons;<br/>
 Keyboard:
 - number keys for numerical input,
 - '/' for division,
