@@ -10,6 +10,7 @@ function Calculator(controls, display) {
         this.processor = [null, null, null];    // [x, operator, y]
         this.memory = {"signed": false, "contents": []};
         this.error = false;
+        this.display.style.removeProperty("color");
         this.enableHovers();
         this.clearHighlights();
         this.showResult();
@@ -155,7 +156,7 @@ function Calculator(controls, display) {
     this.pctResult = () => {this.processor[0] /= 100;}
 
     this.eraseLastChar = () => {
-        const resultInFocus = (Math.abs(this.display.textContent - this.processor[0]) < 0.0000000001);  // comparing two floats is kinda impossible so instead we look if their difference is very small
+        const resultInFocus = (Math.abs(this.display.textContent - this.processor[0]) < 0.000001);  // comparing two floats is kinda impossible so instead we look if their difference is very small
         if (resultInFocus) {
             this.undoResult();
             this.showResult();
@@ -175,6 +176,7 @@ function Calculator(controls, display) {
         const result = this.processor[0] ?? 0;
         let resultAsString = String(result);
         if (resultAsString.indexOf("e") === -1) {
+            if (resultAsString.length > this.SCREENLENGTH) {resultAsString = resultAsString.slice(0, this.SCREENLENGTH)}    // prevent 'eating' backspace inputs by operating only on the 'visible' part
             resultAsString = resultAsString.slice(0, -1);
             if (resultAsString === "-") resultAsString = "0";
         }
@@ -184,7 +186,7 @@ function Calculator(controls, display) {
             if (1 <= Math.abs(resultAsString)) {
                 resultAsString = String(Math.trunc(resultAsString/10));
             }
-            else resultAsString = String(resultAsString).slice(0, -1);
+            else resultAsString = "0";  // exponential form in range 0-1, means it's abysmally small, so just convert it to 0, this ain't no pharmacy
         }
         this.processor[0] = Number(resultAsString);
     };
@@ -230,7 +232,9 @@ function Calculator(controls, display) {
 
     this.turnOn = () => {
         this.setDefaultState();
-        // mouse events
+        // disable context menu
+        document.addEventListener("contextmenu", e => e.preventDefault());
+        // mouse support
         this.controls.addEventListener("click", e => {
             const target = e.target;
             const symbol = target.textContent;
@@ -276,6 +280,23 @@ function Calculator(controls, display) {
                     this.resetMemory();
                 }
             }
+        });
+        // below is kind of an 'easter egg' and is not necessary for this project to work
+        // it is a small practice on handling multiple keys being pressed at the same time
+        // precisely, when Ctrl+s or Ctrl+S (if Caps Lock is on) or Ctrl+Shift+s is pressed
+        this.keysPressed = {};
+        document.addEventListener("keydown", e => {
+            this.keysPressed[e.key] = true;
+            if (this.keysPressed["Control"] && e.key.toLowerCase() === "s") {
+                e.preventDefault();
+                this.error = true;
+                this.display.style.color = "purple";
+                this.display.textContent = "Made by Skorzany";
+                this.disableHovers();
+            }
+        });
+        document.addEventListener("keyup", e => {
+            this.keysPressed[e.key] = false;
         });
     };
 };
