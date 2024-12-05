@@ -26,18 +26,18 @@ Made as a part of the Odin Project curriculum.
 
 Mouse: just click on the buttons;
 Keyboard:
-    - number keys for numerical input,
-    - '/' for division,
-    - '*' for multiplication,
-    - '-' for subtraction,
-    - '+' for addition,
-    - '%' for percentages,
-    - '`' (the tilde key) for changing the sign,
-    - 'Esc' for clearing all,
-    - 'Backspace' for deleting last digit,
-    - '.' or ',' for floating point,
-    - '=' or 'Enter' for result,
-    - (special) Ctrl+s for a small easter egg.
+- number keys for numerical input,
+- '/' for division,
+- '*' for multiplication,
+- '-' for subtraction,
+- '+' for addition,
+- '%' for percentages,
+- '`' (the tilde key) for changing the sign,
+- 'Esc' for clearing all,
+- 'Backspace' for deleting last digit,
+- '.' or ',' for floating point,
+- '=' or 'Enter' for result,
+- (special) Ctrl+s for a small easter egg.
 
 
 # Important
