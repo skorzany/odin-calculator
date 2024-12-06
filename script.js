@@ -157,7 +157,7 @@ function Calculator(controls, display) {
 
     this.eraseLastChar = () => {
         const resultInFocus = (Math.abs(this.display.textContent - this.processor[0]) < 0.000001);  // comparing two floats is kinda impossible so instead we look if their difference is very small
-        if (resultInFocus) {
+        if (resultInFocus && !this.memory.contents.length) {
             this.undoResult();
             this.showResult();
         }
