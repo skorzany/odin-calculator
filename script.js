@@ -194,15 +194,12 @@ function Calculator(controls, display) {
     this.solveEquation = (operator) => {
         if (this.processor[0] === null) {
             this.processor[0] = this.convertToNum(this.memory);
-            this.processor[1] = operator;
         }
-        else {
-            if (this.memory.contents.length) {
+        else if (this.memory.contents.length) {
                 this.processor[2] = this.convertToNum(this.memory);
                 this.doTheMath();
-            }
-            this.processor[1] = operator;
         }
+        this.processor[1] = operator;
     };
 
     this.convertToNum = (obj) => {
@@ -273,7 +270,7 @@ function Calculator(controls, display) {
                 else if (keyName === "%") this.percents();
                 else if (keyName === "`") this.changeSign();
                 else if (".,".includes(keyName)) this.floatMemory();
-                else if ("/*-+=Enter".includes(keyName)) {
+                else if ("/*-+=".includes(keyName) || keyName === "Enter") {
                     this.highlightOperator(keyName);
                     this.solveEquation(this.KEYSTOSYMBOLS[keyName]);
                     this.showResult();
